@@ -18,6 +18,13 @@ export const TableContainer = styled.table`
             text-align: center;
         }
     }
+    & tbody {
+        & tr:hover {
+            background: #DBEAE8;
+            transition: background-color 0.2s ease-in-out;
+            transition-delay: 0.2s;
+        }
+    }
     & th, td {
         padding: 12px 15px;
         text-align: left;

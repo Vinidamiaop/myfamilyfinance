@@ -1,15 +1,33 @@
-import { useState, PropsWithChildren, ReactNode } from 'react';
+import {useState, PropsWithChildren, ReactNode, useEffect} from 'react';
 import ApplicationLogo from '@/Components/ApplicationLogo';
 import Dropdown from '@/Components/Dropdown';
 import NavLink from '@/Components/NavLink';
 import ResponsiveNavLink from '@/Components/ResponsiveNavLink';
-import { Link } from '@inertiajs/react';
+import {Link, usePage} from '@inertiajs/react';
 import { User } from '@/types';
 import styled from "styled-components";
 import Sidenav from "@/Components/Sidenav/Sidenav";
+import {toast} from "react-toastify";
 
+type FlashProps = {
+    flash: {
+        success: string,
+        error: string,
+    }
+}
 export default function BaseAuthenticatedLayout({ user, header, children }: PropsWithChildren<{ user: User, header?: ReactNode }>) {
     const [showingNavigationDropdown, setShowingNavigationDropdown] = useState(false);
+    const { flash } = usePage<FlashProps>().props;
+
+    useEffect(() => {
+        if(!flash) return
+        if(flash.success) {
+            toast.success(flash.success)
+        }
+        if(flash.error) {
+            toast.error(flash.error)
+        }
+    }, [flash])
 
     return (
         <div className="min-h-screen bg-gray-100">

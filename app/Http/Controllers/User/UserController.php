@@ -5,8 +5,9 @@ namespace App\Http\Controllers\User;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\UserFormRequest;
 use App\Services\Users\UserService;
-use Illuminate\Http\Request;
+use Illuminate\Http\RedirectResponse;
 use Inertia\Inertia;
+use Inertia\Response;
 
 class UserController extends Controller
 {
@@ -17,7 +18,17 @@ class UserController extends Controller
         $this->service = $service;
     }
 
-    public function index(): \Inertia\Response
+    public function destroy(int $id): RedirectResponse
+    {
+        $deletedUser = $this->service->delete($id);
+        if ($deletedUser) {
+            return to_route('users.index')->with('success', 'Usuário excluído com sucesso');
+        }
+
+        return redirect()->route('users.index')->with('error', 'Erro ao excluir usuário');
+    }
+
+    public function index(): Response
     {
         $users = $this->service->all();
         return Inertia::render('Users/Index', [
@@ -25,12 +36,7 @@ class UserController extends Controller
         ]);
     }
 
-    public function create()
-    {
-        return Inertia::render('Users/Create');
-    }
-
-    public function show(int $id)
+    public function show(int $id): Response
     {
         $user = $this->service->find($id);
         return Inertia::render('Users/Create', [
@@ -38,9 +44,29 @@ class UserController extends Controller
         ]);
     }
 
-    public function store(UserFormRequest $request)
+    public function store(UserFormRequest $request): RedirectResponse
     {
         $this->service->create($request);
-        return redirect()->route('users.index');
+        return to_route('users.index')->with('success', 'Usuário criado com sucesso');
+    }
+
+    public function create(): Response
+    {
+        return Inertia::render('Users/Create');
+    }
+
+    public function update(UserFormRequest $request, int $id): RedirectResponse
+    {
+        $user = $this->service->update($request, $id);
+
+        if ($user) {
+            return to_route('users.show', [
+                'id' => $id,
+            ], 303)->with('success', 'Usuário atualizado com sucesso');
+        }
+
+        return redirect()->route('users.show', [
+            'id' => $id,
+        ])->with('error', 'Erro ao atualizar usuário');
     }
 }
