@@ -1,4 +1,4 @@
-import React from "react";
+import React, {useEffect} from "react";
 import BaseAuthenticatedLayout from "@/Layouts/BaseAuthenticatedLayout";
 import {AiFillDelete, AiFillEdit} from "react-icons/ai";
 import {IoAddCircleSharp} from "react-icons/io5";
@@ -7,7 +7,9 @@ import Table from "@/Components/Table/Table";
 import styled from "styled-components";
 import {Tooltip} from "react-tooltip";
 import moment from "moment/moment";
-import {router} from "@inertiajs/react";
+import {Head, router} from "@inertiajs/react";
+
+
 
 type UserPageProps = {
     auth: PageProps['auth'],
@@ -21,6 +23,7 @@ type UserPageProps = {
 }
 export default function Index({auth, users}: UserPageProps): JSX.Element {
     const headerItems = [
+        {field: 'id', label: 'Código'},
         {field: 'name', label: 'Nome'},
         {field: 'email', label: 'E-mail'},
         {field: 'created_at', label: 'Criado em', formatter: dateFormatter},
@@ -28,8 +31,10 @@ export default function Index({auth, users}: UserPageProps): JSX.Element {
         {field: 'edit', label: '', formatter: editFormatter},
         {field: 'delete', label: '', formatter: deleteFormatter},
     ];
+
     return (
         <BaseAuthenticatedLayout user={auth.user}>
+            <Head title="Usuários"  />
             <UserIndexContainer>
                 <Table headerItems={headerItems} data={users}/>
                 <ButtonAddUser data-tooltip-id="userTooltip" data-tooltip-content="Adicionar novo usuário">
@@ -54,7 +59,9 @@ const editFormatter = function (value: any, row: any) {
 
 const deleteFormatter = function (value: any, row: any) {
     return React.createElement("button", {
-        href: route('login'),
+        onClick: () => {
+            router.delete(route('users.destroy', row.id))
+        },
         style: {
             padding: "10px 25px",
             borderRadius: "5px",

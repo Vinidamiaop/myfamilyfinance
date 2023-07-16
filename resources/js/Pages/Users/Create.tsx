@@ -5,7 +5,6 @@ import TextInput from "@/Components/TextInput";
 import InputLabel from "@/Components/InputLabel";
 import InputError from "@/Components/InputError";
 import {useEffect, useState} from "react";
-import axios from "axios";
 import {usePage, router} from "@inertiajs/react";
 
 type formErrorsType = {
@@ -23,44 +22,44 @@ type CreateProps = {
         email: string,
         created_at: string,
         updated_at: string,
-    }
+    },
 }
 export default function Create({auth, user}: CreateProps) {
     const { errors } = usePage().props
-    const [name, setName] = useState('');
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
-    const [passwordConfirmation, setPasswordConfirmation] = useState('');
+    const [values, setValues] = useState({
+        name: null,
+        email: null,
+        password: null,
+        password_confirmation: null,
+    })
 
     useEffect(() => {
-        setName(user?.name)
-        setEmail(user?.email)
+        setValues(values => ({...values, name: user?.name, email: user?.email}))
     }, [])
+
+    function handleChange(e) {
+        const key = e.target.name;
+        const value = e.target.value
+        setValues(values => ({
+            ...values,
+            [key]: value,
+        }))
+    }
+
     function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
         event.preventDefault();
+        if(!user) {
+            router.post(route('users.store'), values)
+            return
+        }
 
-        router.post(route('users.store'), {
-            name,
-            email,
-            password,
-            password_confirmation: passwordConfirmation,
-        })
-    }
-
-    function handleInputName(event: React.ChangeEvent<HTMLInputElement>) {
-        setName(event.target.value)
-    }
-
-    function handleInputEmail(event: React.ChangeEvent<HTMLInputElement>) {
-        setEmail(event.target.value)
-    }
-
-    function handleInputPassword(event: React.ChangeEvent<HTMLInputElement>) {
-        setPassword(event.target.value)
-    }
-
-    function handleInputPasswordConfirmation(event: React.ChangeEvent<HTMLInputElement>) {
-        setPasswordConfirmation(event.target.value)
+        const valuesUpdate = {};
+        Object.keys(values).forEach(key => {
+            if(values[key]) {
+                valuesUpdate[key] = values[key];
+            }
+        });
+        router.patch(route('users.update', user.id), valuesUpdate)
     }
 
     return (
@@ -69,31 +68,31 @@ export default function Create({auth, user}: CreateProps) {
             <FormContainer onSubmit={handleSubmit}>
                 <FormGroup>
                     <InputLabel htmlFor="name">Nome</InputLabel>
-                    <TextInput onChange={handleInputName} value={name} type="text" name="name" id="name"/>
+                    <TextInput onChange={handleChange} value={values.name || ''} type="text" name="name" id="name"/>
                     <FormErrorSpan>{errors.name &&
                         <InputError message={errors.name}/>}</FormErrorSpan>
                 </FormGroup>
                 <FormGroup>
                     <InputLabel htmlFor="email">E-mail</InputLabel>
-                    <TextInput onChange={handleInputEmail} value={email}  type="email" name="email" id="email"/>
+                    <TextInput value={values.email || ''} type="text" name="email" id="email" onChange={handleChange}/>
                     <FormErrorSpan>{errors.email &&
                         <InputError message={errors.email}/>}</FormErrorSpan>
                 </FormGroup>
                 <FormGroup>
                     <InputLabel htmlFor="password">Senha</InputLabel>
-                    <TextInput onChange={handleInputPassword} type="password" name="password" id="password"/>
+                    <TextInput onChange={handleChange} type="password" name="password" id="password"/>
                     <FormErrorSpan>{errors.password &&
                         <InputError message={errors.password}/>}</FormErrorSpan>
                 </FormGroup>
                 <FormGroup>
                     <InputLabel htmlFor="password_confirmation">Confirmar senha</InputLabel>
-                    <TextInput onChange={handleInputPasswordConfirmation} type="password" name="password_confirmation"
+                    <TextInput onChange={handleChange} type="password" name="password_confirmation"
                                id="passwordConfirmation"/>
                     <FormErrorSpan>{errors.passwordConfirmation &&
                         <InputError message={errors.passwordConfirmation}/>}</FormErrorSpan>
                 </FormGroup>
                 <FormButton>
-                    Adicionar
+                    {user ? 'Editar' : 'Adicionar'}
                 </FormButton>
             </FormContainer>
         </BaseAuthenticatedLayout>

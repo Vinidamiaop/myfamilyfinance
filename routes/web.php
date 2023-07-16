@@ -28,7 +28,15 @@ Route::middleware('auth')->group(function () {
         Route::get('/', [UserController::class, 'index'])->name('users.index');
         Route::get('/create', [UserController::class, 'create'])->name('users.create');
         Route::post('/', [UserController::class, 'store'])->name('users.store');
-        Route::get('/{id}', [UserController::class, 'show'])->name('users.show');
+        Route::get('/{id}', [UserController::class, 'show'])
+            ->whereNumber('id')
+            ->name('users.show');
+        Route::patch('/{id}', [UserController::class, 'update'])
+            ->whereNumber('id')
+            ->name('users.update');
+        Route::delete('/{id}', [UserController::class, 'destroy'])
+            ->whereNumber('id')
+            ->name('users.destroy');
     });
 });
 
